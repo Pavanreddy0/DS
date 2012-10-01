@@ -1,0 +1,200 @@
+\documentclass[11pt]{article}
+\usepackage{latexsym}
+\usepackage[lined,boxed,linesnumbered]{algorithm2e}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{psfrag}
+\usepackage{color}
+%\input{rgb}
+\newcommand{\handout}[5]{
+  \noindent
+  \begin{center}
+  \framebox{
+    \vbox{
+      \hbox to 5.78in { {\bf A model solution for an algorithmic problem} }
+      \vspace{4mm}
+      \hbox to 5.78in { {\Large \hfill #5  \hfill} }
+      \vspace{2mm}
+      \hbox to 5.78in { {\em #3 \hfill #4} }
+    }
+  }
+  \end{center}
+  \vspace*{4mm}
+}
+
+\newcommand{\lecture}[4]{\handout{#1}{#2}{#3}{}{#1}}
+
+
+\newcommand{\TT}[1]{\textsc{#1}}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{observation}[theorem]{Observation}
+\newtheorem{proposition}[theorem]{Proposition}
+%\newtheorem{problem}[theorem]{\color{darkred}{\bf Problem}}
+\newtheorem{exercise}{\color{DarkBlue}{\bf Exercise}}
+%\newtheorem{exercise}[theorem]{\color{DarkBlue}{\bf Exercise}}
+\newtheorem{problem}[theorem]{{\bf Problem}}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{assumption}[theorem]{Assumption}
+
+\topmargin -0.5in
+\advance \topmargin by -\headheight
+\advance \topmargin by -\headsep
+\textheight 9.9in
+\oddsidemargin 0pt
+\evensidemargin \oddsidemargin
+\marginparwidth 0.5in
+\textwidth 6.5in
+
+\parindent 0in
+\parskip 1.5ex
+
+\begin{document}
+
+\lecture{Maximum sum subarray problem}{}{{\bf } }
+~\vspace*{-.5cm}
+{\bf Problem:} Given an array $A$ storing $n$ numbers, compute the
+subarray of $A$ whose sum is maximum among all possible subarrays of $A$.\\
+
+
+\noindent
+{\bf A model Solution:}
+
+%\section{Algorithm for finding Maximum-Sum Sub Array}
+Let $S_i$ denote the sum of the largest-sum subarray ending at (and including) 
+$A[i]$. Suppose $S_k$ is maximum among all $S_i$'s. If $A[j,..,k]$ be the 
+subarray corresponding to $S_k$, then $A[j,..,k]$ is indeed the subarray of 
+$A$ achieving maximum sum. So to solve our problem, it suffices if
+we compute $S_i$ for each $i$. Let us develop some insight into $S_i$'s.
+
+It follows from definition that $S_0=A[0]$. We now state the following 
+Lemma which establishes a relationship between $S_i$ and $S_{i-1}$ for any 
+$i\ge 1$.
+%
+\begin{lemma}
+If $S_{i-1}\leq 0 $ then $S_i=A[i]$; otherwise $S_i=S_{i-1}+A[i]$.
+\label{Lemma:Si}
+\end{lemma}
+\vspace*{-.5cm}
+\begin{proof}
+The key insight to prove the lemma lies in the following relationship 
+between the subarrays associated with $S_i$ and $S_{i-1}$.
+Notice that the subarray associated with $S_{i-1}$ if appended with $A[i]$
+gives us a subarray of $A$ which terminates at $A[i]$.
+Hence, $S_i\ge S_{i-1}+A[i]$. 
+
+Now $S_{i-1}<0$ implies that
+every subarray terminating at $A[i-1]$ has a negative sum. In other words,
+it is futile to append any subarray terminating at $i-1$ with $A[i]$ to
+get a better sum. Hence $S_i=A[i]$ in this case.
+Likewise, if $S_{i-1}>0$, then by definition, the subarray corresponding to 
+$S_{i-1}$ is the subarray of maximum sum terminating at $A[i-1]$. This 
+subarray when appended with $A[i]$ will give us a subarray terminating at
+$A[i]$ and having maximum sum. This is exactly the subarray corresponding to 
+$S_i$. Hence $S_i=S_{i-1}+A[i]$ in this case.
+\end{proof}
+%
+Algorithm 1 computes maximum sum subarray based on the above lemma.
+\IncMargin{1em}
+\begin{algorithm}[h]
+\SetAlgoLined
+\KwData{Input will be an array $ A[0..n-1]$. However, the algorithm will use 
+additional arrays $S[0..n-1]$ and $L[0..n-1]$ such that $S[i]$ will store $S_i$ 
+and $L[i]$ is the index of the leftmost element of the subarray associated 
+with $S_i$.}
+\KwResult{The sum of the maximum sum subarray along with its leftmost and 
+rightmost indices.}
+$ S[0]\leftarrow A[0]$\;
+$ L[0]\leftarrow 0 $\;
+\For{$ i\leftarrow 1 $ \KwTo $ n-1 $}{
+ \eIf{$ S[i-1]\leq 0 $}{
+  $S[i]\leftarrow A[i] $\;
+  $L[i]\leftarrow i$\;
+  }{
+  $S[i]\leftarrow S[i-1]+A[i] $\;
+  $L[i]\leftarrow L[i-1]$\;
+ }
+}
+Scan array $S$ to compute the maximum element of $S$\;
+If $S[k]$ is maximum, output $S[k], L[k], k$.  
+\caption{Algorithm for finding Maximum-Sum Sub Array}
+\end{algorithm}
+
+%
+\noindent
+{\bf Proving correctness of the algorithm:}\\
+We need to prove that Algorithm 1 is correct. It follows
+from the discussion preceding Lemma \ref{Lemma:Si} that it suffices
+if we can show that Algorithm 1 correctly computes $S_i$'s.
+
+\begin{lemma}
+At the end of the ``for'' loop in Algorithm 1, $S[i]$ stores $S_i$ for each $i<n$.
+\label{Lemma:correct}
+\end{lemma}
+\begin{proof}
+We give a proof by induction of $i$. In particular, we show that assertion
+${\cal A}(i)$, defined below is true for all $i<n$.\\
+${\cal A}(i)$ : At the end of $i$th iteration, $S[i]=S_i$. \\
+\noindent
+The base case $(i=0)$ is trivially true since we explicitly set $S[0]$ 
+to $A[0]$ (which is indeed $S_0$) in the first statement of the algorithm. 
+Hence ${\cal A}(0)$ holds true.
+
+Let us prove that ${\cal A}(j)$ is true for some $j>0$, assuming, as induction
+hypothesis, that ${\cal A}(i)$ is true for all $i<j$.
+Consider the beginning of $j$th iteration. Firstly note that by induction
+hypothesis, $S[j-1]=S_{j-1}$. Now Lemma \ref{Lemma:Si} states that $S_j$
+is $A[j]$ if $S_{j-1}<0$ and $S_{j-1}+A[j]$ otherwise. Since $S[j-1]$ stores
+$S_{j-1}$, it follows from the ``if'' statement executed during $j$th iteration
+of ``for'' loop that $S[j]$ stores $S_j$.
+
+Hence by principle of mathematical induction, $S[i]$ stores $S_i$ for
+each $i<n$.   
+\end{proof}
+
+\begin{large}\textbf{Remember:}\end{large}
+It may appear that Lemma \ref{Lemma:correct} or the proof of correctness
+of Algorithm 1 is unnecessary since Algorithm 1 seems {\em obviously} correct. 
+But the proof is needed for each algorithm irrespective of how simple it looks.
+This is due to the following reasons. 
+\begin{itemize}
+\item
+A formal proof of correctness (or sometimes analysis) of an algorithm
+is important to rectify some errors. For example, in the binary search 
+algorithm, it leads to serious problem if you replace the statement 
+$Left \leftarrow mid-1$ by $Left\leftarrow mid$. 
+\item
+In future, you will find many algorithms whose proof of correctness will not
+be obvious. However, using mathematical induction, it may turn out to be
+easy provided you formulate the assertion carefully. In that spirit, the
+simple proof by induction in Lemma \ref{Lemma:correct} will serve as a useful 
+tool for you.
+\item If you study the proof of Lemma \ref{Lemma:correct} carefully, you will 
+realize that the proof by induction given in Lemma \ref{Lemma:correct} is
+nothing but the formal way which you will use to convince yourself about the 
+correctness  of Algorithm 1. Isn't it ? It is always good to express your 
+thoughts explicitly in words when it comes to analysis of an algorithm. 
+It may give you a better insight into the algorithm as well.
+\end{itemize}
+
+\noindent
+{\bf Analysis of Time and Space complexity the Algorithm}\\
+
+Algorithm 1 executes ``for'' loop $n-1$ times, and in each iteration it spends
+$O(1)$ time. Thereafter, it spends a total of $O(n)$ time in the ``for'' loop.
+Thereafter, it scans array $S$ to find the maximum element. This also takes
+$O(n)$ time. So overall time complexity of the algorithm is $O(n)$.
+The algorithm uses two additional arrays $S$ and $L$ in addition to
+a few variables. Hence, the algorithm uses $O(n)$ extra space.
+
+\textbf{Note:} We can suitably modify  Algorithm 1 so that it uses just 
+a few extra variables instead of the extra arrays $S$ and $L$.
+In that case this algorithm runs in $O(n)$ time and takes only $O(1)$ extra 
+space. Do it as an exercise.\\
+
+\end{document}
